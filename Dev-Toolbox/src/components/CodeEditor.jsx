@@ -1,6 +1,6 @@
 import Editor from "@monaco-editor/react";
 
-function CodeEditor(value, onChange) {
+function CodeEditor({ value, onChange, readOnly = false }) {
     const handleEditorWillMount = (monaco) => {
         monaco.editor.defineTheme("atom-one-dark", {
             base: "vs-dark",
@@ -74,20 +74,12 @@ function CodeEditor(value, onChange) {
                     height="100%"
                     width="100%"
                     value={value}
-                    onChange={(value) => onChange(value)}
+                    onChange={(value) => onChange?.(value)}
                     defaultLanguage="json"
                     theme="atom-one-dark"
                     beforeMount={handleEditorWillMount}
-                    defaultValue={`{
-  "name": "Rajat",
-  "age": 22,
-  "skills": [
-    "Java",
-    "React",
-    "Spring Boot"
-  ]
-}`}
                     options={{
+                        readOnly,
                         fontSize: 15,
                         mouseWheelZoom: true,
 

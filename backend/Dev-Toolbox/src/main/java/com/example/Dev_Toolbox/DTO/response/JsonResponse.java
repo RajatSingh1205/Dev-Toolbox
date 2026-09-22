@@ -6,6 +6,6 @@ import java.util.UUID;
 public record JsonResponse(
         UUID id,
         String payload,
-        LocalDateTime expirationMinutes
+        LocalDateTime expiresAt
 ) {
 }

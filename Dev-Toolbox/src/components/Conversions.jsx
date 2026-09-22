@@ -1,7 +1,5 @@
-import React from 'react'
-import Editor from "@monaco-editor/react";
+import React, { useState } from 'react'
 import CodeEditor from "./CodeEditor.jsx";
-import Listbox from "./Listbox.jsx";
 import GenerateButton from "./GenerateButton.jsx";
 
 function Conversions() {
@@ -14,6 +12,18 @@ function Conversions() {
     "Spring Boot"
   ]
 }`);
+
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(json);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+        } catch (err) {
+            console.error("Failed to copy:", err);
+        }
+    };
 
     return (
         <>
@@ -28,8 +38,11 @@ function Conversions() {
                                 <div className="h-3 w-3 bg-green-500 rounded-full" />
                             </div>
 
-                            <button className="flex items-center justify-center bg-black text-white w-18 h-8 rounded-md">
-                                copy
+                            <button
+                                onClick={handleCopy}
+                                className="flex items-center justify-center bg-black text-white w-18 h-8 rounded-md"
+                            >
+                                {copied ? "copied!" : "copy"}
                             </button>
                         </div>
 

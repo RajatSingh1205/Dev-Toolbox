@@ -1,6 +1,5 @@
 package com.example.Dev_Toolbox.controllers;
 
-import com.example.Dev_Toolbox.DTO.CreateJsonRequest;
 import com.example.Dev_Toolbox.DTO.response.CreateJsonResponse;
 import com.example.Dev_Toolbox.DTO.response.JsonResponse;
 import com.example.Dev_Toolbox.entity.JsonShare;
@@ -27,7 +26,7 @@ public class JsonShareController {
     public ResponseEntity<CreateJsonResponse> createJsonLink(
             @RequestBody JsonNode payload,
             @RequestParam(required = false) Long expirationMinutes
-            ) {
+    ) {
 
         JsonShare jsonShare = service.createShareableJson(payload, expirationMinutes);
 
@@ -43,7 +42,7 @@ public class JsonShareController {
                 .body(response);
     }
 
-//
+    //
     @GetMapping("/{id}")
     public ResponseEntity<JsonResponse> getJson(@PathVariable UUID id) {
 
