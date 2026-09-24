@@ -3,15 +3,7 @@ import CodeEditor from "./CodeEditor.jsx";
 import GenerateButton from "./GenerateButton.jsx";
 
 function Conversions() {
-    const [json, setJson] = useState(`{
-  "name": "Rajat",
-  "age": 22,
-  "skills": [
-    "Java",
-    "React",
-    "Spring Boot"
-  ]
-}`);
+    const [json, setJson] = useState(`–`);
 
     const [copied, setCopied] = useState(false);
 
