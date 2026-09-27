@@ -69,7 +69,7 @@ function CodeEditor({ value, onChange, readOnly = false }) {
 
             {/* Your traffic lights */}
 
-            <div className="h-[420px] w-[96%] rounded-3xl overflow-hidden">
+            <div className="h-[420px] w-[98%] rounded-3xl overflow-hidden">
                 <Editor
                     height="100%"
                     width="100%"

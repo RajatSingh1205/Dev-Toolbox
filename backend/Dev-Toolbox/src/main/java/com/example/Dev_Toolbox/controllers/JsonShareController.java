@@ -25,10 +25,11 @@ public class JsonShareController {
     @PostMapping("/create")
     public ResponseEntity<CreateJsonResponse> createJsonLink(
             @RequestBody JsonNode payload,
-            @RequestParam(required = false) Long expirationMinutes
+            @RequestParam(required = false) Long expirationMinutes,
+            @RequestParam String name
     ) {
 
-        JsonShare jsonShare = service.createShareableJson(payload, expirationMinutes);
+        JsonShare jsonShare = service.createShareableJson(payload, expirationMinutes, name);
 
         String url = "http://localhost:5173/json/" + jsonShare.getId();
 
