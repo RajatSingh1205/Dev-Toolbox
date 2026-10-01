@@ -28,6 +28,6 @@ public class JsonShareCleanupService {
 
         jsonShareRepository.deleteById(uuid);
 
-        System.out.println(uuid + "has been deleted ");
+        System.out.println(uuid + " has been deleted ");
     }
 }
