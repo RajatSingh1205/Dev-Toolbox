@@ -34,7 +34,8 @@ public class JsonShareService {
     public JsonShare createShareableJson(
             JsonNode payload,
             Long expirationMinutes,
-            String name
+            String name,
+            String sessionId
     ) {
         try {
 
@@ -62,6 +63,7 @@ public class JsonShareService {
             LinkHistory linkHistory = new LinkHistory();
 
             linkHistory.setName(name);
+            linkHistory.setSessionId(sessionId);
             linkHistory.setJsonShareId(savedJsonShare.getId());
             linkHistory.setCreatedAt(savedJsonShare.getCreatedAt());
             linkHistory.setExpiresAt(savedJsonShare.getExpiresAt());

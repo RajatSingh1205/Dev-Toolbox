@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import tools.jackson.databind.JsonNode;
 
 
+import com.example.Dev_Toolbox.util.SessionIds;
+import org.springframework.beans.factory.annotation.Value;
+
 import java.util.UUID;
 
 @RestController
@@ -17,6 +20,9 @@ import java.util.UUID;
 public class JsonShareController {
 
     private final JsonShareService service;
+
+    @Value("${app.frontend-url:http://localhost:5173}")
+    private String frontendUrl;
 
     public JsonShareController(JsonShareService service) {
         this.service = service;
@@ -26,12 +32,17 @@ public class JsonShareController {
     public ResponseEntity<CreateJsonResponse> createJsonLink(
             @RequestBody JsonNode payload,
             @RequestParam(required = false) Long expirationMinutes,
-            @RequestParam String name
+            @RequestParam(required = false, defaultValue = "Untitled") String name,
+            @RequestHeader(value = SessionIds.HEADER, required = false) String sessionHeader
     ) {
 
-        JsonShare jsonShare = service.createShareableJson(payload, expirationMinutes, name);
+        String sessionId = SessionIds.require(sessionHeader);
+        String cleanName = name.isBlank() ? "Untitled" : name.strip();
+        if (cleanName.length() > 100) cleanName = cleanName.substring(0, 100);
 
-        String url = "http://localhost:5173/json/" + jsonShare.getId();
+        JsonShare jsonShare = service.createShareableJson(payload, expirationMinutes, cleanName, sessionId);
+
+        String url = frontendUrl + "/json/" + jsonShare.getId();
 
         CreateJsonResponse response = new CreateJsonResponse(
                 jsonShare.getId(),

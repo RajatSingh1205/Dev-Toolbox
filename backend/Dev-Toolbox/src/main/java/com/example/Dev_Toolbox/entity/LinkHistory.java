@@ -8,6 +8,7 @@ import java.util.UUID;
 
 @Data
 @Entity
+@Table(indexes = @Index(columnList = "sessionId"))
 public class LinkHistory {
 
     @Id
@@ -16,6 +17,9 @@ public class LinkHistory {
 
     @Column(nullable = false )
     private String name;
+
+    @Column(length = 36)
+    private String sessionId;
 
     @Column(nullable = false)
     private UUID jsonShareId;

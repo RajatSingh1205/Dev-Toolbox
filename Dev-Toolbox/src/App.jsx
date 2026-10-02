@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Conversions from "./components/Conversions.jsx";
 import ViewJson from "./components/ViewJson.jsx";
@@ -6,26 +6,26 @@ import LinkHistory from "./components/LinkHistory.jsx";
 import Navbar from "./components/Navbar.jsx";
 
 function EditorPage() {
+    // bumped whenever a link is created so the history list refreshes
+    const [historyVersion, setHistoryVersion] = useState(0);
+
     return (
-        <>
-            <div className="bg-black text-white min-h-screen ">
-                {/*<div className=" text-4xl  pt-6 font-bold flex flex-row justify-center mb-5">*/}
-                {/*    <h1>Dev Toolbox</h1>*/}
-                {/*</div>*/}
-                <Navbar/>
-                <div className="flex flex-row justify-center text-center ">
-                    <div className=" w-100">
-                        <p className="text-gray-400">
-                            A simple developer utility for formatting, converting, and sharing JSON with ease. Generate shareable links with customizable expiration times, so your data stays available only as long as you need it.
-                        </p>
-                    </div>
-                </div>
+        <div className="bg-black text-white min-h-screen pb-20">
+            <Navbar />
+            <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-28">
+                <header className="text-center max-w-2xl mx-auto mb-10">
+                    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+                        Format, validate &amp; share JSON
+                    </h1>
+                    <p className="mt-3 text-gray-400">
+                        Paste your JSON, clean it up, and generate a shareable link that expires when you want it to.
+                    </p>
+                </header>
 
-
-                <Conversions/>
-                <LinkHistory />
-            </div>
-        </>
+                <Conversions onCreated={() => setHistoryVersion((v) => v + 1)} />
+                <LinkHistory refreshKey={historyVersion} />
+            </main>
+        </div>
     )
 }
 

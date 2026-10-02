@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import { Copy, Check, ExternalLink } from "lucide-react";
 import ExpirationCard from "./ExpirationCard.jsx";
+import { api, copyText } from "../lib/api.js";
 
 // Maps each preset option shown in ExpirationCard to minutes.
 // "Never" resolves to null, which means "no expirationMinutes param at all".
@@ -30,40 +32,24 @@ function resolveExpirationMinutes(selection) {
     return Number.isFinite(minutes) && minutes > 0 ? minutes : null;
 }
 
-function GenerateButton({ json }) {
+function GenerateButton({ json, valid = true, onCreated }) {
     const [showExpiration, setShowExpiration] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedUrl, setGeneratedUrl] = useState(null);
     const [error, setError] = useState(null);
     const [copied, setCopied] = useState(false);
 
-    const handleGeneration = async (expirationMinutes) => {
+    const handleGeneration = async (expirationMinutes, name) => {
         setIsGenerating(true);
         setError(null);
 
         try {
-            const query =
-                expirationMinutes != null
-                    ? `?expirationMinutes=${expirationMinutes}`
-                    : "";
+            const params = new URLSearchParams({ name: name?.trim() || "Untitled" });
+            if (expirationMinutes != null) params.set("expirationMinutes", expirationMinutes);
 
-            const response = await fetch(
-                `http://localhost:8085/api/json/create${query}`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: json,
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error(`Server responded with ${response.status}`);
-            }
-
-            const data = await response.json();
+            const data = await api(`/api/json/create?${params}`, { method: "POST", body: json });
             setGeneratedUrl(data.url);
+            onCreated?.();
         } catch (err) {
             console.error("Failed to generate link:", err);
             setError("Couldn't generate a link. Is the backend running?");
@@ -73,46 +59,34 @@ function GenerateButton({ json }) {
     };
 
     const handleCopyLink = async () => {
-        if (!generatedUrl) return;
-        try {
-            await navigator.clipboard.writeText(generatedUrl);
+        if (generatedUrl && (await copyText(generatedUrl))) {
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
-        } catch (err) {
-            console.error("Failed to copy link:", err);
         }
     };
 
     return (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center gap-4 mt-6">
             <button
-                onClick={() => {
-                    setError(null);
-                    setShowExpiration(true);
-                }}
-                disabled={isGenerating}
-                className="bg-purple-300 text-black h-15 w-100 my-10 border rounded-2xl disabled:opacity-60"
+                onClick={() => { setError(null); setShowExpiration(true); }}
+                disabled={isGenerating || !valid}
+                title={valid ? "" : "Fix the JSON errors first"}
+                className="w-full max-w-md rounded-2xl bg-purple-300 py-4 font-medium text-black transition hover:bg-purple-200 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
             >
                 {isGenerating ? "Generating..." : "Generate Link"}
             </button>
 
-            {error && (
-                <p className="text-red-400 text-sm -mt-6 mb-6">{error}</p>
-            )}
+            {error && <p className="text-sm text-red-400">{error}</p>}
 
             {generatedUrl && (
-                <div className="flex items-center gap-3 bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 mb-6 w-100">
-                    <input
-                        readOnly
-                        value={generatedUrl}
-                        className="bg-transparent text-sm text-gray-200 flex-1 outline-none truncate"
-                    />
-                    <button
-                        onClick={handleCopyLink}
-                        className="text-xs bg-purple-300 text-black rounded-lg px-3 py-1.5 shrink-0"
-                    >
-                        {copied ? "copied!" : "copy"}
+                <div className="flex w-full max-w-md items-center gap-2 rounded-xl border border-gray-800 bg-gray-950 px-4 py-3">
+                    <input readOnly value={generatedUrl} className="flex-1 truncate bg-transparent text-sm text-gray-200 outline-none" />
+                    <button onClick={handleCopyLink} className="shrink-0 rounded-lg bg-purple-300 p-2 text-black cursor-pointer" aria-label="Copy link">
+                        {copied ? <Check size={14} /> : <Copy size={14} />}
                     </button>
+                    <a href={generatedUrl} target="_blank" rel="noreferrer" className="shrink-0 rounded-lg border border-gray-700 p-2 text-gray-300 hover:text-white" aria-label="Open link">
+                        <ExternalLink size={14} />
+                    </a>
                 </div>
             )}
 
@@ -122,7 +96,7 @@ function GenerateButton({ json }) {
                     onGenerate={(selection) => {
                         const expirationMinutes = resolveExpirationMinutes(selection);
                         setShowExpiration(false);
-                        handleGeneration(expirationMinutes);
+                        handleGeneration(expirationMinutes, selection.name);
                     }}
                 />
             )}

@@ -39,7 +39,7 @@ function CodeEditor({ value, onChange, readOnly = false }) {
             ],
 
             colors: {
-                "editor.background": "#000000",
+                "editor.background": "#030712",
                 "editor.foreground": "#ABB2BF",
 
                 "editorLineNumber.foreground": "#4B5263",
@@ -65,11 +65,8 @@ function CodeEditor({ value, onChange, readOnly = false }) {
     };
 
     return (
-        <div className="h-[500px] w-full">
-
-            {/* Your traffic lights */}
-
-            <div className="h-[420px] w-[98%] rounded-3xl overflow-hidden">
+        <div className="h-full w-full">
+            <div className="h-full w-full overflow-hidden rounded-xl">
                 <Editor
                     height="100%"
                     width="100%"

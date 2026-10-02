@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 function ExpirationCard({ onCancel, onGenerate }) {
 
+    const [name, setName] = useState("");
     const [selected, setSelected] = useState("1 Hour");
 
     const [customValue, setCustomValue] = useState(1);
@@ -20,6 +21,7 @@ function ExpirationCard({ onCancel, onGenerate }) {
 
         if (selected === "Custom") {
             onGenerate({
+                name,
                 type: "custom",
                 value: customValue,
                 unit: customUnit
@@ -29,6 +31,7 @@ function ExpirationCard({ onCancel, onGenerate }) {
         }
 
         onGenerate({
+            name,
             type: "preset",
             value: selected
         });
@@ -37,7 +40,7 @@ function ExpirationCard({ onCancel, onGenerate }) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
 
-            <div className="w-105 rounded-2xl border border-gray-800 bg-gray-950 p-6 shadow-2xl">
+            <div className="w-[calc(100%-2rem)] max-w-md rounded-2xl border border-gray-800 bg-gray-950 p-6 shadow-2xl">
 
                 {/* Heading */}
                 <h2 className="text-xl font-semibold text-white text-center">
@@ -49,8 +52,20 @@ function ExpirationCard({ onCancel, onGenerate }) {
                 </p>
 
 
+                {/* Name */}
+                <label className="block text-sm text-gray-400 mt-6 mb-2">Link name</label>
+                <input
+                    autoFocus
+                    maxLength={100}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
+                    placeholder="e.g. Payment API response"
+                    className="w-full rounded-xl border border-gray-800 bg-gray-900 px-4 py-3 text-white outline-none focus:border-purple-400"
+                />
+
                 {/* Options */}
-                <div className="grid grid-cols-2 gap-3 mt-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-5">
 
                     {options.map((option) => (
 

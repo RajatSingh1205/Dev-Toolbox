@@ -1,57 +1,71 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
+import { Copy, Check, AlignLeft, Minimize2, Trash2, CircleCheck, CircleAlert } from "lucide-react";
 import CodeEditor from "./CodeEditor.jsx";
 import GenerateButton from "./GenerateButton.jsx";
+import { copyText } from "../lib/api.js";
 
-function Conversions() {
-    const [json, setJson] = useState(`–`);
+const SAMPLE = `{
+  "name": "Dev Toolbox",
+  "tags": ["json", "share"],
+  "active": true
+}`;
 
+function ToolButton({ icon: Icon, children, ...props }) {
+    return (
+        <button
+            {...props}
+            className="flex items-center gap-1.5 rounded-lg border border-gray-800 bg-black px-3 py-1.5 text-xs text-gray-300 transition hover:border-gray-600 hover:text-white cursor-pointer"
+        >
+            <Icon size={14} /> <span className="hidden sm:inline">{children}</span>
+        </button>
+    );
+}
+
+function Conversions({ onCreated }) {
+    const [json, setJson] = useState(SAMPLE);
     const [copied, setCopied] = useState(false);
 
+    const validation = useMemo(() => {
+        if (!json.trim()) return { ok: false, message: "Editor is empty" };
+        try { JSON.parse(json); return { ok: true, message: "Valid JSON" }; }
+        catch (e) { return { ok: false, message: e.message }; }
+    }, [json]);
+
+    const prettify = () => validation.ok && setJson(JSON.stringify(JSON.parse(json), null, 2));
+    const minify = () => validation.ok && setJson(JSON.stringify(JSON.parse(json)));
     const handleCopy = async () => {
-        try {
-            await navigator.clipboard.writeText(json);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1500);
-        } catch (err) {
-            console.error("Failed to copy:", err);
-        }
+        if (await copyText(json)) { setCopied(true); setTimeout(() => setCopied(false), 1500); }
     };
 
     return (
-        <>
-            <div className="flex flex-row justify-center items-center ">
-                <div className="flex flex-row justify-center items-center bg-black h-160 w-350">
-                    <div className="bg-gray-950 h-125 w-230  pl-5 pt-3 rounded-3xl">
-                        <div className="flex flex-row items-center justify-between pr-5 mb-4">
-                            <div className="flex flex-row items-center ml-3 gap-2">
-                                <div className="h-3 w-3 bg-red-500 rounded-full" />
-                                <div className="h-3 w-3 bg-yellow-500 rounded-full" />
-                                <div className="h-3 w-3 bg-green-500 rounded-full" />
-                            </div>
-
-                            <button
-                                onClick={handleCopy}
-                                className="flex items-center justify-center bg-black text-white w-18 h-8 rounded-md"
-                            >
-                                {copied ? "copied!" : "copy"}
-                            </button>
-                        </div>
-
-                        <CodeEditor
-                            value={json}
-                            onChange={setJson}
-                        />
+        <section>
+            <div className="rounded-2xl border border-gray-800 bg-gray-950 p-3 sm:p-4">
+                <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2 ml-1">
+                        <span className="h-3 w-3 rounded-full bg-red-500" />
+                        <span className="h-3 w-3 rounded-full bg-yellow-500" />
+                        <span className="h-3 w-3 rounded-full bg-green-500" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <ToolButton icon={AlignLeft} onClick={prettify} disabled={!validation.ok}>Prettify</ToolButton>
+                        <ToolButton icon={Minimize2} onClick={minify} disabled={!validation.ok}>Minify</ToolButton>
+                        <ToolButton icon={copied ? Check : Copy} onClick={handleCopy}>{copied ? "Copied" : "Copy"}</ToolButton>
+                        <ToolButton icon={Trash2} onClick={() => setJson("")}>Clear</ToolButton>
                     </div>
                 </div>
-            </div>
-            <div className="flex flex-row justify-center items-center ">
-                <GenerateButton
-                    json={json}
-                />
+
+                <div className="h-[55vh] min-h-[320px] max-h-[520px]">
+                    <CodeEditor value={json} onChange={(v) => setJson(v ?? "")} />
+                </div>
+
+                <div className={`mt-3 flex items-center gap-2 px-1 text-xs ${validation.ok ? "text-green-400" : "text-red-400"}`}>
+                    {validation.ok ? <CircleCheck size={14} /> : <CircleAlert size={14} />}
+                    <span className="truncate">{validation.message}</span>
+                </div>
             </div>
 
-        </>
-
+            <GenerateButton json={json} valid={validation.ok} onCreated={onCreated} />
+        </section>
     )
 }
 

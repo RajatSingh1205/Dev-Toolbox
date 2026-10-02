@@ -1,1 +1,5 @@
 @import "tailwindcss";
+
+html { color-scheme: dark; }
+body { background: #000; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+::selection { background: rgb(216 180 254 / .35); }
