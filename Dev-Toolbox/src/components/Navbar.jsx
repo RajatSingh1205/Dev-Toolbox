@@ -13,8 +13,8 @@ const Navbar = () => (
             </Link>
 
             <div className="flex items-center gap-6 text-sm text-gray-400">
-                <Link to="/" className="hover:text-white transition">JSON Share</Link>
-                <a href="/#history" className="hover:text-white transition">History</a>
+                <Link to="/editor" className="hover:text-white transition">JSON Tool</Link>
+                <a href="/#coming-soon" className="hover:text-white transition">Coming soon</a>
             </div>
         </div>
     </nav>

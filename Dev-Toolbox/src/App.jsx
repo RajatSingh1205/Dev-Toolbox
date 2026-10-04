@@ -4,6 +4,7 @@ import Conversions from "./components/Conversions.jsx";
 import ViewJson from "./components/ViewJson.jsx";
 import LinkHistory from "./components/LinkHistory.jsx";
 import Navbar from "./components/Navbar.jsx";
+import Landing from "./components/Landing.jsx";
 
 function EditorPage() {
     // bumped whenever a link is created so the history list refreshes
@@ -32,7 +33,8 @@ function EditorPage() {
 function App() {
     return (
         <Routes>
-            <Route path="/" element={<EditorPage />} />
+            <Route path="/" element={<Landing />} />
+            <Route path="/editor" element={<EditorPage />} />
             <Route path="/json/:id" element={<ViewJson />} />
         </Routes>
     )

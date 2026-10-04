@@ -80,7 +80,7 @@ function ViewJson() {
                 {status === "not_found" && (
                     <div className="flex flex-col items-center gap-4 mt-10 text-center">
                         <p className="text-xl">This link doesn't exist or has expired.</p>
-                        <Link to="/" className="rounded-xl bg-purple-300 px-5 py-2.5 text-black">Share a new JSON</Link>
+                        <Link to="/editor" className="rounded-xl bg-purple-300 px-5 py-2.5 text-black">Share a new JSON</Link>
                     </div>
                 )}
 
