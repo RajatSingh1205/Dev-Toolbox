@@ -85,6 +85,7 @@ function CodeEditor({ value, onChange, readOnly = false }) {
                         },
 
                         automaticLayout: true,
+                        scrollBeyondLastLine: false,
 
                         padding: {
                             top: 15,
@@ -92,6 +93,7 @@ function CodeEditor({ value, onChange, readOnly = false }) {
                         },
 
                         scrollbar: {
+                            alwaysConsumeMouseWheel: false,
                             vertical: "hidden",
                             horizontal: "hidden",
                             verticalScrollbarSize: 0,

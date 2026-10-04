@@ -1,25 +1,37 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Copy, Check, ExternalLink, Trash2, Clock, KeyRound } from "lucide-react";
-import { api, copyText, getSessionId, setSessionId } from "../lib/api.js";
+import { api, copyText, getSessionId, setSessionId, parseServerDate } from "../lib/api.js";
 
-function timeAgo(iso) {
-    const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+function useNow(intervalMs = 1000) {
+    const [now, setNow] = useState(() => Date.now());
+    useEffect(() => {
+        const t = setInterval(() => setNow(Date.now()), intervalMs);
+        return () => clearInterval(t);
+    }, [intervalMs]);
+    return now;
+}
+
+function timeAgo(iso, now) {
+    const s = Math.max(0, (now - parseServerDate(iso).getTime()) / 1000);
     if (s < 60) return "just now";
     if (s < 3600) return `${Math.floor(s / 60)}m ago`;
     if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
     return `${Math.floor(s / 86400)}d ago`;
 }
 
-function expiryText(link) {
+function expiryText(link, expired) {
     if (!link.expiresAt) return "Never expires";
-    const d = new Date(link.expiresAt);
-    return link.status === "EXPIRED" ? `Expired ${d.toLocaleString()}` : `Expires ${d.toLocaleString()}`;
+    const d = parseServerDate(link.expiresAt).toLocaleString();
+    return expired ? `Expired ${d}` : `Expires ${d}`;
 }
 
-function HistoryItem({ link, onRemove }) {
+function HistoryItem({ link, onRemove, now }) {
     const [copied, setCopied] = useState(false);
     const url = `${window.location.origin}/json/${link.jsonShareId}`;
-    const active = link.status === "ACTIVE";
+    const expired =
+        link.status === "EXPIRED" ||
+        (link.expiresAt && parseServerDate(link.expiresAt).getTime() <= now);
+    const active = !expired;
 
     const copy = async () => {
         if (await copyText(url)) { setCopied(true); setTimeout(() => setCopied(false), 1500); }
@@ -35,7 +47,7 @@ function HistoryItem({ link, onRemove }) {
                     </span>
                 </div>
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
-                    <Clock size={12} /> Created {timeAgo(link.createdAt)} · {expiryText(link)}
+                    <Clock size={12} /> Created {timeAgo(link.createdAt, now)} · {expiryText(link, expired)}
                 </p>
             </div>
 
@@ -95,6 +107,7 @@ function LinkHistory({ refreshKey = 0 }) {
         } else setRestoreError(true);
     };
 
+    const now = useNow(1000);
     const sessionId = getSessionId();
 
     return (
@@ -162,7 +175,7 @@ function LinkHistory({ refreshKey = 0 }) {
 
             {status === "ok" && links.length > 0 && (
                 <ul className="space-y-3">
-                    {links.map((link) => <HistoryItem key={link.id} link={link} onRemove={removeOne} />)}
+                    {links.map((link) => <HistoryItem key={link.id} link={link} onRemove={removeOne} now={now} />)}
                 </ul>
             )}
         </section>

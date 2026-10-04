@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import CodeEditor from "./CodeEditor.jsx";
+import Navbar from "./Navbar.jsx";
+import { API_BASE, copyText, parseServerDate } from "../lib/api.js";
 
 function formatExpiry(expiresAt) {
     if (!expiresAt) return "Never expires";
 
-    const date = new Date(expiresAt);
+    const date = parseServerDate(expiresAt);
     const isPast = date.getTime() < Date.now();
 
     return isPast
@@ -29,7 +31,7 @@ function ViewJson() {
 
             try {
                 const response = await fetch(
-                    `http://localhost:8085/api/json/${id}`
+                    `${API_BASE}/api/json/${id}`
                 );
 
                 if (cancelled) return;
@@ -63,75 +65,50 @@ function ViewJson() {
 
     const handleCopy = async () => {
         if (!payload) return;
-        try {
-            await navigator.clipboard.writeText(payload);
+        if (await copyText(payload)) {
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
-        } catch (err) {
-            console.error("Failed to copy:", err);
         }
     };
 
     return (
-        <div className="bg-black text-white min-h-screen">
-            <div className="text-4xl pt-6 font-bold flex flex-row justify-center mb-8">
-                <Link to="/">Dev Toolbox</Link>
-            </div>
+        <div className="bg-black text-white min-h-screen pb-16">
+            <Navbar />
+            <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-28">
+                {status === "loading" && <p className="text-center text-gray-400">Loading shared JSON...</p>}
 
-            {status === "loading" && (
-                <p className="text-center text-gray-400">Loading shared JSON...</p>
-            )}
+                {status === "not_found" && (
+                    <div className="flex flex-col items-center gap-4 mt-10 text-center">
+                        <p className="text-xl">This link doesn't exist or has expired.</p>
+                        <Link to="/" className="rounded-xl bg-purple-300 px-5 py-2.5 text-black">Share a new JSON</Link>
+                    </div>
+                )}
 
-            {status === "not_found" && (
-                <div className="flex flex-col items-center gap-4 mt-10">
-                    <p className="text-xl">This link doesn't exist or has expired.</p>
-                    <Link
-                        to="/"
-                        className="bg-purple-300 text-black px-5 py-2.5 rounded-xl"
-                    >
-                        Share a new JSON
-                    </Link>
-                </div>
-            )}
+                {status === "error" && (
+                    <p className="mt-10 text-center text-xl text-red-400">Couldn't load this link. Is the backend running?</p>
+                )}
 
-            {status === "error" && (
-                <div className="flex flex-col items-center gap-4 mt-10">
-                    <p className="text-xl text-red-400">
-                        Couldn't load this link. Is the backend running?
-                    </p>
-                </div>
-            )}
-
-            {status === "ok" && (
-                <>
-                    <div className="flex flex-row justify-center items-center">
-                        <div className="flex flex-row justify-center items-center bg-black h-160 w-350">
-                            <div className="bg-gray-950 h-130 w-250 mt-5 pl-5 pt-3 rounded-3xl">
-                                <div className="flex flex-row items-center justify-between pr-8 mb-4">
-                                    <div className="flex flex-row items-center ml-3 gap-2">
-                                        <div className="h-3 w-3 bg-red-500 rounded-full" />
-                                        <div className="h-3 w-3 bg-yellow-500 rounded-full" />
-                                        <div className="h-3 w-3 bg-green-500 rounded-full" />
-                                    </div>
-
-                                    <button
-                                        onClick={handleCopy}
-                                        className="flex items-center justify-center bg-black text-white w-18 h-8 rounded-md"
-                                    >
-                                        {copied ? "copied!" : "copy"}
-                                    </button>
+                {status === "ok" && (
+                    <>
+                        <div className="rounded-2xl border border-gray-800 bg-gray-950 p-3 sm:p-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2 ml-1">
+                                    <span className="h-3 w-3 rounded-full bg-red-500" />
+                                    <span className="h-3 w-3 rounded-full bg-yellow-500" />
+                                    <span className="h-3 w-3 rounded-full bg-green-500" />
                                 </div>
-
+                                <button onClick={handleCopy} className="rounded-lg border border-gray-800 bg-black px-3 py-1.5 text-xs text-gray-300 hover:text-white cursor-pointer">
+                                    {copied ? "Copied" : "Copy"}
+                                </button>
+                            </div>
+                            <div className="h-[65vh] min-h-[320px]">
                                 <CodeEditor value={payload} readOnly />
                             </div>
                         </div>
-                    </div>
-
-                    <p className="text-center text-sm text-gray-400 mt-4">
-                        {formatExpiry(expiresAt)}
-                    </p>
-                </>
-            )}
+                        <p className="mt-4 text-center text-sm text-gray-400">{formatExpiry(expiresAt)}</p>
+                    </>
+                )}
+            </main>
         </div>
     );
 }

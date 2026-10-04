@@ -35,3 +35,7 @@ export async function api(path, options = {}) {
 export const copyText = async (text) => {
     try { await navigator.clipboard.writeText(text); return true; } catch { return false; }
 };
+
+/** Backend sends LocalDateTime (no offset); the backend now runs in UTC, so read it as UTC. */
+export const parseServerDate = (iso) =>
+    new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(iso) ? iso : `${iso}Z`);

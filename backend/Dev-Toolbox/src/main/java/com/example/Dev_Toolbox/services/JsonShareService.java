@@ -5,7 +5,9 @@ import com.example.Dev_Toolbox.entity.LinkHistory;
 import com.example.Dev_Toolbox.entity.LinkStatus;
 import com.example.Dev_Toolbox.repository.JsonShareRepository;
 import com.example.Dev_Toolbox.repository.LinkHistoryRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -85,8 +87,15 @@ public class JsonShareService {
         }
     }
     public JsonShare getShareableJsonId(UUID id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("JSON share not found"));
+        JsonShare share = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "JSON share not found"));
+
+        // Redis expiry events are fire-and-forget (lost if the app is asleep/restarting),
+        // so never serve an expired link just because the cleanup hasn't run yet.
+        if (share.getExpiresAt() != null && share.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "JSON share has expired");
+        }
+        return share;
     }
 
 }
