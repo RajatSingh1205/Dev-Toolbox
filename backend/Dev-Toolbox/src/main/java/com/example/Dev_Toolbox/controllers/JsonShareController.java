@@ -13,11 +13,15 @@ import tools.jackson.databind.JsonNode;
 import com.example.Dev_Toolbox.util.SessionIds;
 import org.springframework.beans.factory.annotation.Value;
 
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/json")
 public class JsonShareController {
+
+    private static final long MAX_EXPIRATION_MINUTES = 60L * 24 * 30; // 30 days
 
     private final JsonShareService service;
 
@@ -37,6 +41,11 @@ public class JsonShareController {
     ) {
 
         String sessionId = SessionIds.require(sessionHeader);
+
+        if (expirationMinutes != null && (expirationMinutes < 1 || expirationMinutes > MAX_EXPIRATION_MINUTES)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "expirationMinutes must be between 1 and " + MAX_EXPIRATION_MINUTES);
+        }
         String cleanName = name.isBlank() ? "Untitled" : name.strip();
         if (cleanName.length() > 100) cleanName = cleanName.substring(0, 100);
 

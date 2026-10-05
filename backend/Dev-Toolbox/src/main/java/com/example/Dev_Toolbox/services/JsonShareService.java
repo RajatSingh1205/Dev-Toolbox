@@ -82,8 +82,10 @@ public class JsonShareService {
 
             return savedJsonShare;
 
+        } catch (ResponseStatusException | IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid JSON");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not create the link");
         }
     }
     public JsonShare getShareableJsonId(UUID id) {

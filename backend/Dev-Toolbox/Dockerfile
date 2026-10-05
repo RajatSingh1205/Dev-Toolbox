@@ -9,5 +9,7 @@ RUN mvn -q clean package -DskipTests
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
+RUN useradd --system --uid 1001 app
+USER app
 # Render's free tier has 512 MB RAM
 ENTRYPOINT ["java", "-XX:MaxRAMPercentage=65", "-Xss512k", "-jar", "app.jar"]
